@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Gospel Show | QR Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<!-- QR SCANNER -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --primary: #0d6efd;
+  --success: #198754;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --dark: #0b1c2d;
+  --muted: #6c757d;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(135deg, #0b1c2d, #102a43);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 460px;
+  padding: 30px 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 30px 70px rgba(0,0,0,.35);
+  text-align: center;
+}
+
+.header {
+  margin-bottom: 22px;
+}
+
+.header i {
+  font-size: 36px;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.header h1 {
+  font-size: 22px;
+  margin: 6px 0 4px;
+}
+
+.header p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+#reader {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+}
+
+.status {
+  margin-top: 22px;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  display: none;
+  line-height: 1.4;
+}
+
+.status i {
+  margin-right: 6px;
+}
+
+.valid {
+  background: #e6f4ea;
+  color: var(--success);
+}
+
+.used {
+  background: #fff8e1;
+  color: #8a6d1d;
+}
+
+.invalid {
+  background: #fdecea;
+  color: var(--danger);
+}
+
+.footer {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="header">
+    <i class="fa-solid fa-qrcode"></i>
+    <h1>Ticket Scanner</h1>
+    <p>Scan QR code to validate entry</p>
+  </div>
+
+  <div id="reader"></div>
+
+  <div id="statusBox" class="status"></div>
+
+  <div class="footer">
+    © Gospel Event • Live QR Validation System
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://nsmzfsbweutysbdhgjec.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const statusBox = document.getElementById("statusBox");
+let scanningLocked = false;
+
+function showStatus(type, message, icon) {
+  statusBox.className = "status " + type;
+  statusBox.innerHTML = `<i class=\"fa-solid ${icon}\"></i> ${message}`;
+  statusBox.style.display = "block";
+}
+
+async function onScanSuccess(decodedText) {
+  if (scanningLocked) return;
+  scanningLocked = true;
+
+  const { data, error } = await supabaseClient
+    .rpc("scan_ticket", { qr_code: decodedText });
+
+  if (error || !data) {
+    showStatus("invalid", "Invalid QR Code", "fa-circle-xmark");
+    scanningLocked = false;
+    return;
+  }
+
+  if (data.status === "valid") {
+    showStatus("valid", `ENTRY ALLOWED • ${data.ticket_type}`, "fa-circle-check");
+  } else if (data.status === "used") {
+    showStatus("used", "QR Code Already Used", "fa-triangle-exclamation");
+  } else {
+    showStatus("invalid", "Invalid QR Code", "fa-circle-xmark");
+  }
+
+  setTimeout(() => {
+    scanningLocked = false;
+  }, 3000);
+}
+
+new Html5Qrcode("reader").start(
+  { facingMode: "environment" },
+  { fps: 10, qrbox: 250 },
+  onScanSuccess
+);
+</script>
+
+</body>
+</html>
