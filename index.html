@@ -2,113 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Gospel Show | QR Scanner</title>
+<title>Gospel Show | Gate Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-<!-- QR SCANNER -->
+<!-- QR Scanner -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
-<!-- SUPABASE -->
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-:root {
-  --primary: #0d6efd;
-  --success: #198754;
-  --warning: #ffc107;
-  --danger: #dc3545;
-  --dark: #0b1c2d;
-  --muted: #6c757d;
-  --radius: 16px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   font-family: "Segoe UI", system-ui, sans-serif;
-  background: linear-gradient(135deg, #0b1c2d, #102a43);
+  background: linear-gradient(135deg,#0b1c2d,#102a43);
   min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .card {
-  background: #ffffff;
-  width: 100%;
+  background: #fff;
   max-width: 460px;
-  padding: 30px 28px;
-  border-radius: var(--radius);
-  box-shadow: 0 30px 70px rgba(0,0,0,.35);
+  width: 100%;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.4);
   text-align: center;
 }
 
-.header {
-  margin-bottom: 22px;
+h2 {
+  margin: 0 0 12px;
 }
 
-.header i {
-  font-size: 36px;
-  color: var(--primary);
-  margin-bottom: 6px;
-}
-
-.header h1 {
-  font-size: 22px;
-  margin: 6px 0 4px;
-}
-
-.header p {
-  font-size: 14px;
-  color: var(--muted);
-}
-
-#reader {
-  width: 100%;
+/* CAMERA */
+.camera-box {
+  position: relative;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #ddd;
 }
 
-.status {
-  margin-top: 22px;
-  padding: 16px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 15px;
+.overlay {
+  position: absolute;
+  inset: 0;
   display: none;
-  line-height: 1.4;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  color: #fff;
 }
 
-.status i {
-  margin-right: 6px;
+.overlay.valid { background: rgba(25,135,84,.85); }
+.overlay.used { background: rgba(255,193,7,.85); color:#000; }
+.overlay.invalid { background: rgba(220,53,69,.85); }
+
+/* COUNTERS */
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
 }
 
-.valid {
-  background: #e6f4ea;
-  color: var(--success);
+.stat {
+  flex: 1;
+  margin: 0 4px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.used {
-  background: #fff8e1;
-  color: #8a6d1d;
-}
+.verified { background:#e6f4ea; color:#198754; }
+.rejected { background:#fdecea; color:#dc3545; }
+.vip { background:#e7f1ff; color:#0d6efd; }
 
-.invalid {
-  background: #fdecea;
-  color: var(--danger);
-}
-
-.footer {
-  margin-top: 18px;
-  font-size: 12px;
-  color: var(--muted);
+button.flash {
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: #0b1c2d;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -116,67 +100,112 @@ body {
 <body>
 
 <div class="card">
-  <div class="header">
-    <i class="fa-solid fa-qrcode"></i>
-    <h1>Ticket Scanner</h1>
-    <p>Scan QR code to validate entry</p>
+
+  <h2>Ticket Scanner</h2>
+
+  <div class="camera-box">
+    <div id="reader"></div>
+    <div id="overlay" class="overlay"></div>
   </div>
 
-  <div id="reader"></div>
+  <button class="flash" onclick="toggleFlash()">
+    <i class="fa-solid fa-bolt"></i> Flashlight
+  </button>
 
-  <div id="statusBox" class="status"></div>
-
-  <div class="footer">
-    © Gospel Event • Live QR Validation System
+  <div class="stats">
+    <div class="stat verified">
+      Verified<br><span id="ok">0</span>
+    </div>
+    <div class="stat rejected">
+      Rejected<br><span id="bad">0</span>
+    </div>
+    <div class="stat vip">
+      VIP<br><span id="vip">0</span>
+    </div>
   </div>
+
 </div>
 
 <script>
+/* SUPABASE CONFIG */
 const SUPABASE_URL = "https://nsmzfsbweutysbdhgjec.supabase.co";
 const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
-
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const statusBox = document.getElementById("statusBox");
-let scanningLocked = false;
-
-function showStatus(type, message, icon) {
-  statusBox.className = "status " + type;
-  statusBox.innerHTML = `<i class=\"fa-solid ${icon}\"></i> ${message}`;
-  statusBox.style.display = "block";
+/* VOICE */
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 0.9;
+  msg.pitch = 1;
+  speechSynthesis.speak(msg);
 }
 
-async function onScanSuccess(decodedText) {
-  if (scanningLocked) return;
-  scanningLocked = true;
+/* OVERLAY */
+const overlay = document.getElementById("overlay");
 
-  const { data, error } = await supabaseClient
-    .rpc("scan_ticket", { qr_code: decodedText });
-
-  if (error || !data) {
-    showStatus("invalid", "Invalid QR Code", "fa-circle-xmark");
-    scanningLocked = false;
-    return;
-  }
-
-  if (data.status === "valid") {
-    showStatus("valid", `ENTRY ALLOWED • ${data.ticket_type}`, "fa-circle-check");
-  } else if (data.status === "used") {
-    showStatus("used", "QR Code Already Used", "fa-triangle-exclamation");
-  } else {
-    showStatus("invalid", "Invalid QR Code", "fa-circle-xmark");
-  }
-
-  setTimeout(() => {
-    scanningLocked = false;
-  }, 3000);
+function show(type, text) {
+  overlay.className = "overlay " + type;
+  overlay.innerHTML = text;
+  overlay.style.display = "flex";
+  setTimeout(() => overlay.style.display = "none", 2000);
 }
 
-new Html5Qrcode("reader").start(
+/* COUNTERS */
+let ok = 0, bad = 0, vip = 0;
+const okEl = document.getElementById("ok");
+const badEl = document.getElementById("bad");
+const vipEl = document.getElementById("vip");
+
+/* SCANNER */
+let qr, track, torch = false;
+
+qr = new Html5Qrcode("reader");
+qr.start(
   { facingMode: "environment" },
   { fps: 10, qrbox: 250 },
-  onScanSuccess
-);
+  async (txt) => {
+
+    const { data, error } = await supabaseClient
+      .rpc("scan_ticket", { qr_code: txt });
+
+    if (error || !data) {
+      bad++; badEl.textContent = bad;
+      show("invalid", "INVALID");
+      speak("Invalid Ticket");
+      return;
+    }
+
+    if (data.status === "valid") {
+      ok++; okEl.textContent = ok;
+
+      if (data.ticket_type === "VIP") {
+        vip++; vipEl.textContent = vip;
+      }
+
+      show("valid", "ACCESS GRANTED");
+      speak("Access Granted");
+    }
+    else if (data.status === "used") {
+      bad++; badEl.textContent = bad;
+      show("used", "ALREADY USED");
+      speak("Ticket Already Used");
+    }
+    else {
+      bad++; badEl.textContent = bad;
+      show("invalid", "ACCESS DENIED");
+      speak("Access Denied");
+    }
+  }
+).then(() => {
+  track = document.querySelector("video").srcObject.getVideoTracks()[0];
+});
+
+/* FLASH */
+function toggleFlash() {
+  if (!track) return;
+  torch = !torch;
+  track.applyConstraints({ advanced: [{ torch }] });
+}
 </script>
 
 </body>
