@@ -3,49 +3,63 @@
 <head>
 <meta charset="UTF-8" />
 <title>Gospel Show | Gate Scanner</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* { box-sizing: border-box; }
-
-body {
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: #0b1c2d;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
+  padding: 0;
 }
 
-/* APP CONTAINER */
-.app {
+html, body {
   width: 100%;
-  max-width: 480px;
+  height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0b1c2d;
+}
+
+/* APP WRAPPER */
+.app {
+  max-width: 420px;
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
   background: #fff;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: fixed;
+  inset: 0;
 }
 
 /* HEADER */
 .header {
-  padding: 14px 16px;
+  height: 48px;
   background: linear-gradient(135deg,#0b1c2d,#102a43);
   color: #fff;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 15px;
+  letter-spacing: .3px;
 }
 
 /* CAMERA */
 .camera-box {
   position: relative;
-  flex: 1;
+  width: 100%;
+  height: 52vh;
   background: #000;
+  overflow: hidden;
 }
 
 #reader {
@@ -53,15 +67,16 @@ body {
   height: 100%;
 }
 
+/* OVERLAY */
 .overlay {
   position: absolute;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 900;
+  text-align: center;
   color: #fff;
 }
 
@@ -71,31 +86,33 @@ body {
 
 /* BOTTOM PANEL */
 .panel {
-  padding: 14px;
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background: #fff;
-  box-shadow: 0 -8px 20px rgba(0,0,0,.15);
 }
 
 /* STATS */
 .stats {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
 }
 
 .stat {
   flex: 1;
-  padding: 10px;
-  border-radius: 12px;
+  border-radius: 10px;
+  padding: 8px 4px;
   text-align: center;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .stat span {
   display: block;
-  font-size: 20px;
-  margin-top: 4px;
+  font-size: 18px;
+  margin-top: 2px;
 }
 
 .verified { background:#e6f4ea; color:#198754; }
@@ -104,13 +121,14 @@ body {
 
 /* FLASH */
 .flash {
+  margin-top: 8px;
   width: 100%;
-  padding: 14px;
-  border-radius: 14px;
+  height: 44px;
+  border-radius: 12px;
   border: none;
   background: #0b1c2d;
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
 }
 </style>
@@ -121,7 +139,7 @@ body {
 <div class="app">
 
   <div class="header">
-    🎟️ Gospel Show – Gate Scanner
+    🎟️ Gospel Show — Gate Scanner
   </div>
 
   <div class="camera-box">
@@ -150,7 +168,7 @@ const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* VOICE */
-function speak(text) {
+function speak(text){
   speechSynthesis.cancel();
   const msg = new SpeechSynthesisUtterance(text);
   msg.rate = 0.85;
@@ -159,11 +177,11 @@ function speak(text) {
 
 /* OVERLAY */
 const overlay = document.getElementById("overlay");
-function show(type, text) {
+function show(type,text){
   overlay.className = "overlay " + type;
   overlay.innerHTML = text;
   overlay.style.display = "flex";
-  setTimeout(() => overlay.style.display = "none", 2200);
+  setTimeout(()=>overlay.style.display="none",2200);
 }
 
 /* COUNTERS */
@@ -172,15 +190,15 @@ const okEl=document.getElementById("ok");
 const badEl=document.getElementById("bad");
 const vipEl=document.getElementById("vip");
 
-/* SCANNER CONTROL */
+/* SCANNER */
 let scanningLocked=false;
 let track,torch=false;
 
 const qr = new Html5Qrcode("reader");
 qr.start(
   { facingMode:"environment" },
-  { fps:10, qrbox:{ width:260, height:260 } },
-  async txt => {
+  { fps:10, qrbox:220 },
+  async txt=>{
     if(scanningLocked) return;
     scanningLocked=true;
 
