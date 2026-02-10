@@ -1,108 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Gate Scanner</title>
+<meta charset="UTF-8" />
+<title>Gospel Show | Gate Scanner</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:system-ui;
-  background:#0b1c2d;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.app{
-  max-width:420px;
-  margin:auto;
-  height:100vh;
-  background:#fff;
-  display:flex;
-  flex-direction:column;
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0b1c2d;
 }
 
-.header{
-  height:50px;
-  background:#0b1c2d;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
+/* APP WRAPPER */
+.app {
+  max-width: 420px;
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
 }
 
-.camera{
-  flex:1;
-  background:#000;
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+/* HEADER */
+.header {
+  height: 48px;
+  background: linear-gradient(135deg,#0b1c2d,#102a43);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: .3px;
 }
 
-#reader{
-  width:260px;
-  height:260px;
+/* CAMERA */
+.camera-box {
+  position: relative;
+  width: 100%;
+  height: 52vh;
+  background: #000;
+  overflow: hidden;
 }
 
-.overlay{
-  position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  font-weight:900;
-  color:#fff;
+#reader {
+  width: 100%;
+  height: 100%;
 }
 
-.valid{background:rgba(25,135,84,.9)}
-.used{background:rgba(255,193,7,.9);color:#000}
-.invalid{background:rgba(220,53,69,.9)}
-
-.panel{
-  padding:10px;
-  background:#fff;
+/* OVERLAY */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+  color: #fff;
 }
 
-.stats{
-  display:flex;
-  gap:6px;
+.overlay.valid { background: rgba(25,135,84,.9); }
+.overlay.used { background: rgba(255,193,7,.9); color:#000; }
+.overlay.invalid { background: rgba(220,53,69,.9); }
+
+/* BOTTOM PANEL */
+.panel {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
 }
 
-.stat{
-  flex:1;
-  padding:8px;
-  border-radius:10px;
-  text-align:center;
-  font-size:12px;
-  font-weight:700;
+/* STATS */
+.stats {
+  display: flex;
+  gap: 6px;
 }
 
-.stat span{
-  display:block;
-  font-size:18px;
+.stat {
+  flex: 1;
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.ok{background:#e6f4ea;color:#198754}
-.bad{background:#fdecea;color:#dc3545}
-.vip{background:#e7f1ff;color:#0d6efd}
+.stat span {
+  display: block;
+  font-size: 18px;
+  margin-top: 2px;
+}
 
-.tap{
-  margin-top:8px;
-  background:#0b1c2d;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  border-radius:10px;
-  font-weight:700;
+.verified { background:#e6f4ea; color:#198754; }
+.rejected { background:#fdecea; color:#dc3545; }
+.vip { background:#e7f1ff; color:#0d6efd; }
+
+/* FLASH */
+.flash {
+  margin-top: 8px;
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: #0b1c2d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
 }
 </style>
 </head>
@@ -110,128 +137,111 @@ html,body{
 <body>
 
 <div class="app">
-  <div class="header">🎟️ Gospel Show Gate</div>
 
-  <div class="camera">
+  <div class="header">
+    🎟️ Gospel Show — Gate Scanner
+  </div>
+
+  <div class="camera-box">
     <div id="reader"></div>
     <div id="overlay" class="overlay"></div>
   </div>
 
   <div class="panel">
     <div class="stats">
-      <div class="stat ok">Verified<span id="ok">0</span></div>
-      <div class="stat bad">Rejected<span id="bad">0</span></div>
+      <div class="stat verified">Verified<span id="ok">0</span></div>
+      <div class="stat rejected">Rejected<span id="bad">0</span></div>
       <div class="stat vip">VIP<span id="vip">0</span></div>
     </div>
 
-    <div class="tap" onclick="enableVoice()">🔊 Tap once to enable voice</div>
+    <button class="flash" onclick="toggleFlash()">
+      <i class="fa-solid fa-bolt"></i> Flashlight
+    </button>
   </div>
+
 </div>
 
 <script>
 /* SUPABASE */
-const supabaseClient = supabase.createClient(
-  "https://nsmzfsbweutysbdhgjec.supabase.co",
-  "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7"
-);
+const SUPABASE_URL = "https://nsmzfsbweutysbdhgjec.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* VOICE */
-let voiceEnabled=false;
-function enableVoice(){
-  voiceEnabled=true;
-  speak("Voice system activated");
-}
-
 function speak(text){
-  if(!voiceEnabled) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate=0.9;
-  speechSynthesis.speak(u);
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 0.85;
+  speechSynthesis.speak(msg);
 }
 
-/* UI */
-const overlay=document.getElementById("overlay");
+/* OVERLAY */
+const overlay = document.getElementById("overlay");
 function show(type,text){
-  overlay.className="overlay "+type;
-  overlay.innerText=text;
-  overlay.style.display="flex";
+  overlay.className = "overlay " + type;
+  overlay.innerHTML = text;
+  overlay.style.display = "flex";
   setTimeout(()=>overlay.style.display="none",2200);
 }
 
 /* COUNTERS */
 let ok=0,bad=0,vip=0;
-const okEl=ok=document.getElementById("ok");
-const badEl=bad=document.getElementById("bad");
-const vipEl=vip=document.getElementById("vip");
-
-/* SAVE COUNTERS */
-async function saveStats(v,r,vipCount){
-  await supabaseClient
-    .from("gate_stats")
-    .update({ verified:v, rejected:r, vip:vipCount })
-    .eq("id",1);
-}
-
-/* LOG */
-async function logScan(qr,status,type){
-  await supabaseClient
-    .from("gate_logs")
-    .insert([{ qr_code:qr, status, ticket_type:type, gate_name:"Main Gate" }]);
-}
+const okEl=document.getElementById("ok");
+const badEl=document.getElementById("bad");
+const vipEl=document.getElementById("vip");
 
 /* SCANNER */
-let locked=false;
-const scanner=new Html5Qrcode("reader");
+let scanningLocked=false;
+let track,torch=false;
 
-scanner.start(
-  {facingMode:"environment"},
-  {fps:10, qrbox:{width:220,height:220}},
-  async text=>{
-    if(locked) return;
-    locked=true;
+const qr = new Html5Qrcode("reader");
+qr.start(
+  { facingMode:"environment" },
+  { fps:10, qrbox:220 },
+  async txt=>{
+    if(scanningLocked) return;
+    scanningLocked=true;
 
-    const {data}=await supabaseClient
-      .from("tickets")
-      .select("*")
-      .eq("qr_code",text)
-      .single();
+    const {data,error} = await supabaseClient
+      .rpc("scan_ticket",{ qr_code: txt });
 
-    if(!data){
+    if(error || !data){
       bad++; badEl.textContent=bad;
       show("invalid","INVALID");
-      speak("Invalid ticket");
-      await logScan(text,"invalid",null);
-      await saveStats(ok,bad,vip);
-      return setTimeout(()=>locked=false,3000);
+      speak("Invalid Ticket");
+      setTimeout(()=>scanningLocked=false,2500);
+      return;
     }
 
-    if(data.used){
+    if(data.status==="valid"){
+      ok++; okEl.textContent=ok;
+      if(data.ticket_type==="VIP"){ vip++; vipEl.textContent=vip; }
+      show("valid","ACCESS GRANTED");
+      speak("Access Granted");
+    }
+    else if(data.status==="used"){
       bad++; badEl.textContent=bad;
-      show("used","USED");
-      speak("Ticket already used");
-      await logScan(text,"used",data.type);
-      await saveStats(ok,bad,vip);
-      return setTimeout(()=>locked=false,3000);
+      show("used","ALREADY USED");
+      speak("Ticket Already Used");
+    }
+    else{
+      bad++; badEl.textContent=bad;
+      show("invalid","ACCESS DENIED");
+      speak("Access Denied");
     }
 
-    await supabaseClient
-      .from("tickets")
-      .update({used:true})
-      .eq("id",data.id);
-
-    ok++; okEl.textContent=ok;
-    if(data.type==="VIP"){ vip++; vipEl.textContent=vip; }
-
-    show("valid","ACCESS GRANTED");
-    speak("Access granted");
-
-    await logScan(text,"valid",data.type);
-    await saveStats(ok,bad,vip);
-
-    setTimeout(()=>locked=false,3000);
+    setTimeout(()=>scanningLocked=false,3000);
   }
-);
+).then(()=>{
+  track=document.querySelector("video").srcObject.getVideoTracks()[0];
+});
+
+/* FLASH */
+function toggleFlash(){
+  if(!track) return;
+  torch=!torch;
+  track.applyConstraints({ advanced:[{ torch }] });
+}
 </script>
 
 </body>
