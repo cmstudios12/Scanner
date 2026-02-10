@@ -2,102 +2,145 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Gospel Show | Professional Gate Scanner</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gospel Show | Gate Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:"Segoe UI",system-ui,sans-serif;
-  background:linear-gradient(135deg,#0b1c2d,#102a43);
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-.card{
-  background:#fff;
-  max-width:460px;
-  width:100%;
-  padding:24px;
-  border-radius:16px;
-  box-shadow:0 30px 60px rgba(0,0,0,.4);
-  text-align:center;
-}
-.camera-box{
-  position:relative;
-  border-radius:14px;
-  overflow:hidden;
-  border:1px solid #ddd;
-}
-.overlay{
-  position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  font-weight:800;
-  color:#fff;
-  text-align:center;
-}
-.overlay.valid{background:rgba(25,135,84,.88);}
-.overlay.used{background:rgba(255,193,7,.88);color:#000;}
-.overlay.invalid{background:rgba(220,53,69,.88);}
+* { box-sizing: border-box; }
 
-.stats{
-  display:flex;
-  justify-content:space-between;
-  margin-top:14px;
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0b1c2d;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
 }
-.stat{
-  flex:1;
-  margin:0 4px;
-  padding:10px;
-  border-radius:10px;
-  font-size:14px;
-  font-weight:700;
-}
-.verified{background:#e6f4ea;color:#198754;}
-.rejected{background:#fdecea;color:#dc3545;}
-.vip{background:#e7f1ff;color:#0d6efd;}
 
-.flash{
-  margin-top:10px;
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  background:#0b1c2d;
-  color:#fff;
-  border:none;
-  font-weight:600;
+/* APP CONTAINER */
+.app {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.header {
+  padding: 14px 16px;
+  background: linear-gradient(135deg,#0b1c2d,#102a43);
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* CAMERA */
+.camera-box {
+  position: relative;
+  flex: 1;
+  background: #000;
+}
+
+#reader {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.overlay.valid { background: rgba(25,135,84,.9); }
+.overlay.used { background: rgba(255,193,7,.9); color:#000; }
+.overlay.invalid { background: rgba(220,53,69,.9); }
+
+/* BOTTOM PANEL */
+.panel {
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 -8px 20px rgba(0,0,0,.15);
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.stat span {
+  display: block;
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+.verified { background:#e6f4ea; color:#198754; }
+.rejected { background:#fdecea; color:#dc3545; }
+.vip { background:#e7f1ff; color:#0d6efd; }
+
+/* FLASH */
+.flash {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #0b1c2d;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h2>Ticket Scanner</h2>
+<div class="app">
+
+  <div class="header">
+    🎟️ Gospel Show – Gate Scanner
+  </div>
 
   <div class="camera-box">
     <div id="reader"></div>
     <div id="overlay" class="overlay"></div>
   </div>
 
-  <button class="flash" onclick="toggleFlash()">
-    <i class="fa-solid fa-bolt"></i> Flashlight
-  </button>
+  <div class="panel">
+    <div class="stats">
+      <div class="stat verified">Verified<span id="ok">0</span></div>
+      <div class="stat rejected">Rejected<span id="bad">0</span></div>
+      <div class="stat vip">VIP<span id="vip">0</span></div>
+    </div>
 
-  <div class="stats">
-    <div class="stat verified">Verified<br><span id="ok">0</span></div>
-    <div class="stat rejected">Rejected<br><span id="bad">0</span></div>
-    <div class="stat vip">VIP<br><span id="vip">0</span></div>
+    <button class="flash" onclick="toggleFlash()">
+      <i class="fa-solid fa-bolt"></i> Flashlight
+    </button>
   </div>
+
 </div>
 
 <script>
@@ -107,20 +150,20 @@ const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* VOICE */
-function speak(text){
+function speak(text) {
   speechSynthesis.cancel();
-  const msg=new SpeechSynthesisUtterance(text);
-  msg.rate=0.85;
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 0.85;
   speechSynthesis.speak(msg);
 }
 
-/* UI */
-const overlay=document.getElementById("overlay");
-function show(type,text){
-  overlay.className="overlay "+type;
-  overlay.innerHTML=text;
-  overlay.style.display="flex";
-  setTimeout(()=>overlay.style.display="none",2200);
+/* OVERLAY */
+const overlay = document.getElementById("overlay");
+function show(type, text) {
+  overlay.className = "overlay " + type;
+  overlay.innerHTML = text;
+  overlay.style.display = "flex";
+  setTimeout(() => overlay.style.display = "none", 2200);
 }
 
 /* COUNTERS */
@@ -129,61 +172,36 @@ const okEl=document.getElementById("ok");
 const badEl=document.getElementById("bad");
 const vipEl=document.getElementById("vip");
 
-/* LOAD COUNTERS FROM DB */
-async function loadCounters(){
-  const {data}=await supabaseClient
-    .from("gate_counters")
-    .select("*")
-    .eq("id",1)
-    .single();
-  if(data){
-    ok=data.verified;
-    bad=data.rejected;
-    vip=data.vip;
-    okEl.textContent=ok;
-    badEl.textContent=bad;
-    vipEl.textContent=vip;
-  }
-}
-loadCounters();
-
 /* SCANNER CONTROL */
 let scanningLocked=false;
-let qr,track,torch=false;
+let track,torch=false;
 
-qr=new Html5Qrcode("reader");
+const qr = new Html5Qrcode("reader");
 qr.start(
-  {facingMode:"environment"},
-  {fps:10,qrbox:250},
-  async(txt)=>{
+  { facingMode:"environment" },
+  { fps:10, qrbox:{ width:260, height:260 } },
+  async txt => {
     if(scanningLocked) return;
     scanningLocked=true;
 
-    const {data,error}=await supabaseClient
-      .rpc("scan_ticket",{qr_code:txt});
+    const {data,error} = await supabaseClient
+      .rpc("scan_ticket",{ qr_code: txt });
 
-    let status="invalid";
-    let ticketType="N/A";
-
-    if(!error && data){
-      status=data.status;
-      ticketType=data.ticket_type || "Standard";
+    if(error || !data){
+      bad++; badEl.textContent=bad;
+      show("invalid","INVALID");
+      speak("Invalid Ticket");
+      setTimeout(()=>scanningLocked=false,2500);
+      return;
     }
 
-    /* LOG TO DB */
-    await supabaseClient.from("gate_logs").insert({
-      qr_code:txt,
-      status:status,
-      ticket_type:ticketType
-    });
-
-    if(status==="valid"){
+    if(data.status==="valid"){
       ok++; okEl.textContent=ok;
-      if(ticketType==="VIP"){ vip++; vipEl.textContent=vip; }
+      if(data.ticket_type==="VIP"){ vip++; vipEl.textContent=vip; }
       show("valid","ACCESS GRANTED");
       speak("Access Granted");
     }
-    else if(status==="used"){
+    else if(data.status==="used"){
       bad++; badEl.textContent=bad;
       show("used","ALREADY USED");
       speak("Ticket Already Used");
@@ -194,17 +212,7 @@ qr.start(
       speak("Access Denied");
     }
 
-    /* UPDATE COUNTERS DB */
-    await supabaseClient
-      .from("gate_counters")
-      .update({
-        verified:ok,
-        rejected:bad,
-        vip:vip
-      })
-      .eq("id",1);
-
-    setTimeout(()=>scanningLocked=false,3000); // professional delay
+    setTimeout(()=>scanningLocked=false,3000);
   }
 ).then(()=>{
   track=document.querySelector("video").srcObject.getVideoTracks()[0];
@@ -214,7 +222,7 @@ qr.start(
 function toggleFlash(){
   if(!track) return;
   torch=!torch;
-  track.applyConstraints({advanced:[{torch}]});
+  track.applyConstraints({ advanced:[{ torch }] });
 }
 </script>
 
