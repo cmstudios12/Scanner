@@ -12,124 +12,84 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:"Segoe UI",sans-serif;background:#0b1c2d;}
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: #0b1c2d;
-}
-
-/* APP WRAPPER */
-.app {
-  max-width: 420px;
-  width: 100%;
-  height: 100vh;
-  margin: 0 auto;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  inset: 0;
+.app{
+  max-width:420px;
+  margin:auto;
+  height:100vh;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
 }
 
 /* HEADER */
-.header {
-  height: 48px;
-  background: linear-gradient(135deg,#0b1c2d,#102a43);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: .3px;
+.header{
+  height:50px;
+  background:linear-gradient(135deg,#0b1c2d,#102a43);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
 }
 
-/* CAMERA */
-.camera-box {
-  position: relative;
-  width: 100%;
-  height: 52vh;
-  background: #000;
-  overflow: hidden;
+/* SQUARE CAMERA */
+.camera-box{
+  width:100%;
+  aspect-ratio:1/1;
+  background:#000;
+  position:relative;
 }
 
-#reader {
-  width: 100%;
-  height: 100%;
-}
+#reader{width:100%;height:100%;}
 
 /* OVERLAY */
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 900;
-  text-align: center;
-  color: #fff;
+.overlay{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:900;
+  color:#fff;
 }
+.valid{background:rgba(25,135,84,.9);}
+.used{background:rgba(255,193,7,.9);color:#000;}
+.invalid{background:rgba(220,53,69,.9);}
 
-.overlay.valid { background: rgba(25,135,84,.9); }
-.overlay.used { background: rgba(255,193,7,.9); color:#000; }
-.overlay.invalid { background: rgba(220,53,69,.9); }
-
-/* BOTTOM PANEL */
-.panel {
-  flex: 1;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #fff;
+/* PANEL */
+.panel{
+  flex:1;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
 }
 
 /* STATS */
-.stats {
-  display: flex;
-  gap: 6px;
+.stats{display:flex;gap:6px;}
+.stat{
+  flex:1;
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+  font-weight:700;
 }
+.stat span{display:block;font-size:18px;}
+.verified{background:#e6f4ea;color:#198754;}
+.rejected{background:#fdecea;color:#dc3545;}
+.vip{background:#e7f1ff;color:#0d6efd;}
 
-.stat {
-  flex: 1;
-  border-radius: 10px;
-  padding: 8px 4px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.stat span {
-  display: block;
-  font-size: 18px;
-  margin-top: 2px;
-}
-
-.verified { background:#e6f4ea; color:#198754; }
-.rejected { background:#fdecea; color:#dc3545; }
-.vip { background:#e7f1ff; color:#0d6efd; }
-
-/* FLASH */
-.flash {
-  margin-top: 8px;
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  border: none;
-  background: #0b1c2d;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
+.flash{
+  height:46px;
+  border:none;
+  border-radius:12px;
+  background:#0b1c2d;
+  color:#fff;
+  font-weight:700;
 }
 </style>
 </head>
@@ -138,49 +98,68 @@ html, body {
 
 <div class="app">
 
-  <div class="header">
-    🎟️ Gospel Show — Gate Scanner
+<div class="header">
+🎟️ Gospel Show — Gate Scanner
+</div>
+
+<div class="camera-box">
+  <div id="reader"></div>
+  <div id="overlay" class="overlay"></div>
+</div>
+
+<div class="panel">
+  <div class="stats">
+    <div class="stat verified">Verified<span id="ok">0</span></div>
+    <div class="stat rejected">Rejected<span id="bad">0</span></div>
+    <div class="stat vip">VIP<span id="vip">0</span></div>
   </div>
 
-  <div class="camera-box">
-    <div id="reader"></div>
-    <div id="overlay" class="overlay"></div>
-  </div>
-
-  <div class="panel">
-    <div class="stats">
-      <div class="stat verified">Verified<span id="ok">0</span></div>
-      <div class="stat rejected">Rejected<span id="bad">0</span></div>
-      <div class="stat vip">VIP<span id="vip">0</span></div>
-    </div>
-
-    <button class="flash" onclick="toggleFlash()">
-      <i class="fa-solid fa-bolt"></i> Flashlight
-    </button>
-  </div>
+  <button class="flash" onclick="toggleFlash()">
+    <i class="fa-solid fa-bolt"></i> Flashlight
+  </button>
+</div>
 
 </div>
 
 <script>
-/* SUPABASE */
 const SUPABASE_URL = "https://nsmzfsbweutysbdhgjec.supabase.co";
 const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* VOICE */
+/* 📳 VIBRATION */
+function vibrate(type){
+  if(!navigator.vibrate) return;
+
+  if(type==="valid") navigator.vibrate(200);
+  else if(type==="used") navigator.vibrate([200,100,200]);
+  else navigator.vibrate([200,100,200,100,200]);
+}
+
+/* 🔊 VOICE */
 function speak(text){
+  const msg=new SpeechSynthesisUtterance(text);
+  msg.rate=0.85;
   speechSynthesis.cancel();
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.rate = 0.85;
   speechSynthesis.speak(msg);
 }
 
+/* 💾 LOCAL STORAGE */
+function getLocalTickets(){
+  return JSON.parse(localStorage.getItem("tickets")||"{}");
+}
+
+function saveLocalTicket(code,data){
+  let t=getLocalTickets();
+  t[code]=data;
+  localStorage.setItem("tickets",JSON.stringify(t));
+}
+
 /* OVERLAY */
-const overlay = document.getElementById("overlay");
+const overlay=document.getElementById("overlay");
 function show(type,text){
-  overlay.className = "overlay " + type;
-  overlay.innerHTML = text;
-  overlay.style.display = "flex";
+  overlay.className="overlay "+type;
+  overlay.innerHTML=text;
+  overlay.style.display="flex";
   setTimeout(()=>overlay.style.display="none",2200);
 }
 
@@ -194,40 +173,90 @@ const vipEl=document.getElementById("vip");
 let scanningLocked=false;
 let track,torch=false;
 
-const qr = new Html5Qrcode("reader");
+const qr=new Html5Qrcode("reader");
+
 qr.start(
-  { facingMode:"environment" },
-  { fps:10, qrbox:220 },
+  {facingMode:"environment"},
+  {fps:10,qrbox:260},
   async txt=>{
     if(scanningLocked) return;
     scanningLocked=true;
 
-    const {data,error} = await supabaseClient
-      .rpc("scan_ticket",{ qr_code: txt });
+    /* OFFLINE MODE */
+    if(!navigator.onLine){
+      let local=getLocalTickets();
 
-    if(error || !data){
+      if(!local[txt]){
+        bad++; badEl.textContent=bad;
+        show("invalid","OFFLINE INVALID");
+        speak("Offline Invalid");
+        vibrate("invalid");
+        setTimeout(()=>scanningLocked=false,2500);
+        return;
+      }
+
+      if(local[txt].used){
+        bad++; badEl.textContent=bad;
+        show("used","OFFLINE USED");
+        speak("Already Used");
+        vibrate("used");
+      }else{
+        ok++; okEl.textContent=ok;
+        local[txt].used=true;
+        saveLocalTicket(txt,local[txt]);
+
+        if(local[txt].type==="VIP"){
+          vip++; vipEl.textContent=vip;
+        }
+
+        show("valid","OFFLINE OK");
+        speak("Access Granted");
+        vibrate("valid");
+      }
+
+      setTimeout(()=>scanningLocked=false,3000);
+      return;
+    }
+
+    /* ONLINE MODE */
+    const {data,error}=await supabaseClient
+      .rpc("scan_ticket",{qr_code:txt});
+
+    if(error||!data){
       bad++; badEl.textContent=bad;
       show("invalid","INVALID");
       speak("Invalid Ticket");
+      vibrate("invalid");
       setTimeout(()=>scanningLocked=false,2500);
       return;
     }
 
+    /* SAVE LOCALLY FOR OFFLINE */
+    saveLocalTicket(txt,{
+      used:data.status==="used",
+      type:data.ticket_type
+    });
+
     if(data.status==="valid"){
       ok++; okEl.textContent=ok;
-      if(data.ticket_type==="VIP"){ vip++; vipEl.textContent=vip; }
+      if(data.ticket_type==="VIP"){
+        vip++; vipEl.textContent=vip;
+      }
       show("valid","ACCESS GRANTED");
       speak("Access Granted");
+      vibrate("valid");
     }
     else if(data.status==="used"){
       bad++; badEl.textContent=bad;
       show("used","ALREADY USED");
-      speak("Ticket Already Used");
+      speak("Already Used");
+      vibrate("used");
     }
     else{
       bad++; badEl.textContent=bad;
-      show("invalid","ACCESS DENIED");
+      show("invalid","DENIED");
       speak("Access Denied");
+      vibrate("invalid");
     }
 
     setTimeout(()=>scanningLocked=false,3000);
@@ -240,7 +269,7 @@ qr.start(
 function toggleFlash(){
   if(!track) return;
   torch=!torch;
-  track.applyConstraints({ advanced:[{ torch }] });
+  track.applyConstraints({advanced:[{torch}]});
 }
 </script>
 
