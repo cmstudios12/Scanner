@@ -22,14 +22,12 @@ button{cursor:pointer;outline:none;border:none;}
 
 /* --- APP CONTAINER --- */
 .app{
-  max-width:480px;
-  margin:auto;
+  width:100%;
   height:100vh;
   display:flex;
   flex-direction:column;
   background:#fff;
-  border-radius:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  border-radius:0;
   overflow:hidden;
 }
 
@@ -39,7 +37,7 @@ button{cursor:pointer;outline:none;border:none;}
   color:#fff;
   font-weight:700;
   font-size:18px;
-  padding:14px 20px;
+  padding:16px 12px;
   text-align:center;
 }
 
@@ -49,12 +47,9 @@ button{cursor:pointer;outline:none;border:none;}
   width:100%;
   aspect-ratio:1/1;
   background:#000;
-  overflow:hidden;
-  border-bottom:2px solid #ddd;
-  border-radius:0 0 12px 12px;
 }
 
-#reader{width:100%;height:100%;}
+#reader{width:100%;height:100%;object-fit:cover;}
 
 /* --- OVERLAY --- */
 .overlay{
@@ -67,8 +62,8 @@ button{cursor:pointer;outline:none;border:none;}
   font-weight:700;
   color:#fff;
   text-align:center;
-  border-radius:12px;
-  padding:10px;
+  border-radius:0;
+  padding:12px;
 }
 .valid{background:rgba(25,135,84,.9);}
 .used{background:rgba(255,193,7,.9);color:#000;}
@@ -80,23 +75,25 @@ button{cursor:pointer;outline:none;border:none;}
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  padding:16px 20px;
+  padding:12px 16px;
 }
 
 /* --- STATS --- */
 .stats{
   display:flex;
+  flex-wrap:wrap;
   gap:10px;
-  margin-bottom:20px;
+  margin-bottom:12px;
 }
 .stat{
-  flex:1;
+  flex:1 1 30%;
   border-radius:10px;
-  padding:14px 0;
+  padding:12px 0;
   text-align:center;
   font-weight:700;
   box-shadow:0 2px 6px rgba(0,0,0,0.1);
   transition:transform 0.2s;
+  min-width:90px;
 }
 .stat span{display:block;font-size:20px; margin-top:6px;}
 .stat:hover{transform:scale(1.05);}
@@ -110,7 +107,7 @@ button{cursor:pointer;outline:none;border:none;}
   padding:14px 0;
   border-radius:12px;
   font-weight:700;
-  font-size:16px;
+  font-size:18px;
   transition:0.2s;
   display:flex;
   justify-content:center;
@@ -132,6 +129,15 @@ button{cursor:pointer;outline:none;border:none;}
   text-align:center;
   margin-top:10px;
 }
+
+/* --- MOBILE RESPONSIVE --- */
+@media(max-width:480px){
+  .header{font-size:16px;padding:14px 10px;}
+  .stat{font-size:14px;padding:10px 0; min-width:70px;}
+  .stat span{font-size:18px;}
+  .btn{font-size:16px;padding:12px 0;}
+  .overlay{font-size:18px;padding:8px;}
+}
 </style>
 </head>
 
@@ -140,7 +146,7 @@ button{cursor:pointer;outline:none;border:none;}
 
   <!-- HEADER -->
   <div class="header">
-    <i class="fa-solid fa-ticket"></i> Echoes of Mercy
+    <i class="fa-solid fa-ticket"></i> Sun-Day Chillas Ticket Scanner
   </div>
 
   <!-- CAMERA -->
@@ -174,7 +180,7 @@ button{cursor:pointer;outline:none;border:none;}
     </button>
 
     <div class="footer">
-      <span>System Online</span>
+      <span id="statusText">System Online</span>
     </div>
   </div>
 </div>
@@ -257,9 +263,7 @@ qr.start(
         ok++; okEl.textContent=ok;
         local[txt].used=true;
         saveLocalTicket(txt,local[txt]);
-        if(local[txt].type==="VIP"){
-          vip++; vipEl.textContent=vip;
-        }
+        if(local[txt].type==="VIP") vip++; vipEl.textContent=vip;
         show("valid","OFFLINE OK");
         speak("Access Granted");
         vibrate("valid");
