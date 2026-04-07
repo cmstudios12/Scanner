@@ -47,7 +47,7 @@ button{cursor:pointer;outline:none;border:none;}
 .camera-box{
   position:relative;
   width:100%;
-  aspect-ratio:1/1; /* keep it square */
+  aspect-ratio:1/1;
   background:#000;
   overflow:hidden;
   border-bottom:12px solid #ddd;
@@ -228,16 +228,11 @@ const vipEl=document.getElementById("vip");
 let scanningLocked=false;
 let track,torch=false;
 
-function getQrBoxSize(){
-  const box=document.querySelector(".camera-box");
-  return Math.min(box.clientWidth, box.clientHeight) * 0.8; // 80% of camera box
-}
-
 const qr=new Html5Qrcode("reader");
 
 qr.start(
   {facingMode:"environment"},
-  {fps:10, qrbox:getQrBoxSize},
+  {fps:10,qrbox:300},
   async txt=>{
     if(scanningLocked) return;
     scanningLocked=true;
