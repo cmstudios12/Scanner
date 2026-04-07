@@ -1,141 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Gospel Show | Gate Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
+<!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<!-- QR & Supabase -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* --- RESET & BASE --- */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:"Segoe UI",sans-serif;background:#0b1c2d;}
+html,body{height:100%;font-family:"Segoe UI",sans-serif;background:#f4f6f8;color:#333;}
+button{cursor:pointer;outline:none;border:none;}
+.flex{display:flex;}
+.center{align-items:center;justify-content:center;}
 
+/* --- APP CONTAINER --- */
 .app{
-  max-width:420px;
+  max-width:480px;
   margin:auto;
   height:100vh;
-  background:#fff;
   display:flex;
   flex-direction:column;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  overflow:hidden;
 }
 
-/* HEADER */
+/* --- HEADER --- */
 .header{
-  height:50px;
-  background:linear-gradient(135deg,#0b1c2d,#102a43);
+  background:linear-gradient(135deg,#0d6efd,#102a43);
   color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   font-weight:700;
+  font-size:18px;
+  padding:14px 20px;
+  text-align:center;
 }
 
-/* SQUARE CAMERA */
+/* --- CAMERA BOX --- */
 .camera-box{
+  position:relative;
   width:100%;
   aspect-ratio:1/1;
   background:#000;
-  position:relative;
+  overflow:hidden;
+  border-bottom:2px solid #ddd;
+  border-radius:0 0 12px 12px;
 }
 
 #reader{width:100%;height:100%;}
 
-/* OVERLAY */
+/* --- OVERLAY --- */
 .overlay{
   position:absolute;
   inset:0;
   display:none;
   align-items:center;
   justify-content:center;
-  font-size:22px;
-  font-weight:900;
+  font-size:20px;
+  font-weight:700;
   color:#fff;
+  text-align:center;
+  border-radius:12px;
+  padding:10px;
 }
 .valid{background:rgba(25,135,84,.9);}
 .used{background:rgba(255,193,7,.9);color:#000;}
 .invalid{background:rgba(220,53,69,.9);}
 
-/* PANEL */
+/* --- PANEL --- */
 .panel{
   flex:1;
-  padding:12px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
+  padding:16px 20px;
 }
 
-/* STATS */
-.stats{display:flex;gap:6px;}
+/* --- STATS --- */
+.stats{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
 .stat{
   flex:1;
   border-radius:10px;
-  padding:10px;
+  padding:14px 0;
   text-align:center;
   font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  transition:transform 0.2s;
 }
-.stat span{display:block;font-size:18px;}
+.stat span{display:block;font-size:20px; margin-top:6px;}
+.stat:hover{transform:scale(1.05);}
 .verified{background:#e6f4ea;color:#198754;}
 .rejected{background:#fdecea;color:#dc3545;}
 .vip{background:#e7f1ff;color:#0d6efd;}
 
-.flash{
-  height:46px;
-  border:none;
+/* --- BUTTONS --- */
+.btn{
+  width:100%;
+  padding:14px 0;
   border-radius:12px;
-  background:#0b1c2d;
-  color:#fff;
   font-weight:700;
+  font-size:16px;
+  transition:0.2s;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+.flash-btn{
+  background:#0d6efd;
+  color:#fff;
+}
+.flash-btn:hover{
+  background:#0b5ed7;
+}
+
+/* --- FOOTER INFO --- */
+.footer{
+  font-size:12px;
+  color:#666;
+  text-align:center;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
-<div class="header">
-🎟️ Gospel Show — Gate Scanner
-</div>
-
-<div class="camera-box">
-  <div id="reader"></div>
-  <div id="overlay" class="overlay"></div>
-</div>
-
-<div class="panel">
-  <div class="stats">
-    <div class="stat verified">Verified<span id="ok">0</span></div>
-    <div class="stat rejected">Rejected<span id="bad">0</span></div>
-    <div class="stat vip">VIP<span id="vip">0</span></div>
+  <!-- HEADER -->
+  <div class="header">
+    <i class="fa-solid fa-ticket"></i> Echoes of Mercy
   </div>
 
-  <button class="flash" onclick="toggleFlash()">
-    <i class="fa-solid fa-bolt"></i> Flashlight
-  </button>
-</div>
+  <!-- CAMERA -->
+  <div class="camera-box">
+    <div id="reader"></div>
+    <div id="overlay" class="overlay"></div>
+  </div>
 
+  <!-- PANEL -->
+  <div class="panel">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat verified">
+        Verified
+        <span id="ok">0</span>
+      </div>
+      <div class="stat rejected">
+        Rejected
+        <span id="bad">0</span>
+      </div>
+      <div class="stat vip">
+        VIP
+        <span id="vip">0</span>
+      </div>
+    </div>
+
+    <!-- BUTTON -->
+    <button class="btn flash-btn" onclick="toggleFlash()">
+      <i class="fa-solid fa-bolt"></i> Toggle Flashlight
+    </button>
+
+    <div class="footer">
+      <span>System Online</span>
+    </div>
+  </div>
 </div>
 
 <script>
+// Supabase
 const SUPABASE_URL = "https://nsmzfsbweutysbdhgjec.supabase.co";
 const SUPABASE_KEY = "sb_publishable_bEvuBN_PM3UdX1ferXyQkg_tR97hhN7";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* 📳 VIBRATION */
+// VIBRATION
 function vibrate(type){
   if(!navigator.vibrate) return;
-
   if(type==="valid") navigator.vibrate(200);
   else if(type==="used") navigator.vibrate([200,100,200]);
   else navigator.vibrate([200,100,200,100,200]);
 }
 
-/* 🔊 VOICE */
+// VOICE
 function speak(text){
   const msg=new SpeechSynthesisUtterance(text);
   msg.rate=0.85;
@@ -143,18 +201,15 @@ function speak(text){
   speechSynthesis.speak(msg);
 }
 
-/* 💾 LOCAL STORAGE */
-function getLocalTickets(){
-  return JSON.parse(localStorage.getItem("tickets")||"{}");
-}
-
+// LOCAL STORAGE
+function getLocalTickets(){ return JSON.parse(localStorage.getItem("tickets")||"{}"); }
 function saveLocalTicket(code,data){
   let t=getLocalTickets();
   t[code]=data;
   localStorage.setItem("tickets",JSON.stringify(t));
 }
 
-/* OVERLAY */
+// OVERLAY
 const overlay=document.getElementById("overlay");
 function show(type,text){
   overlay.className="overlay "+type;
@@ -163,13 +218,13 @@ function show(type,text){
   setTimeout(()=>overlay.style.display="none",2200);
 }
 
-/* COUNTERS */
+// COUNTERS
 let ok=0,bad=0,vip=0;
 const okEl=document.getElementById("ok");
 const badEl=document.getElementById("bad");
 const vipEl=document.getElementById("vip");
 
-/* SCANNER */
+// SCANNER
 let scanningLocked=false;
 let track,torch=false;
 
@@ -177,15 +232,13 @@ const qr=new Html5Qrcode("reader");
 
 qr.start(
   {facingMode:"environment"},
-  {fps:10,qrbox:260},
+  {fps:10,qrbox:300},
   async txt=>{
     if(scanningLocked) return;
     scanningLocked=true;
 
-    /* OFFLINE MODE */
     if(!navigator.onLine){
       let local=getLocalTickets();
-
       if(!local[txt]){
         bad++; badEl.textContent=bad;
         show("invalid","OFFLINE INVALID");
@@ -204,11 +257,9 @@ qr.start(
         ok++; okEl.textContent=ok;
         local[txt].used=true;
         saveLocalTicket(txt,local[txt]);
-
         if(local[txt].type==="VIP"){
           vip++; vipEl.textContent=vip;
         }
-
         show("valid","OFFLINE OK");
         speak("Access Granted");
         vibrate("valid");
@@ -218,10 +269,7 @@ qr.start(
       return;
     }
 
-    /* ONLINE MODE */
-    const {data,error}=await supabaseClient
-      .rpc("scan_ticket",{qr_code:txt});
-
+    const {data,error}=await supabaseClient.rpc("scan_ticket",{qr_code:txt});
     if(error||!data){
       bad++; badEl.textContent=bad;
       show("invalid","INVALID");
@@ -231,47 +279,35 @@ qr.start(
       return;
     }
 
-    /* SAVE LOCALLY FOR OFFLINE */
-    saveLocalTicket(txt,{
-      used:data.status==="used",
-      type:data.ticket_type
-    });
+    saveLocalTicket(txt,{used:data.status==="used",type:data.ticket_type});
 
     if(data.status==="valid"){
       ok++; okEl.textContent=ok;
-      if(data.ticket_type==="VIP"){
-        vip++; vipEl.textContent=vip;
-      }
+      if(data.ticket_type==="VIP") vip++; vipEl.textContent=vip;
       show("valid","ACCESS GRANTED");
       speak("Access Granted");
       vibrate("valid");
-    }
-    else if(data.status==="used"){
+    } else if(data.status==="used"){
       bad++; badEl.textContent=bad;
       show("used","ALREADY USED");
       speak("Already Used");
       vibrate("used");
-    }
-    else{
+    } else{
       bad++; badEl.textContent=bad;
       show("invalid","DENIED");
       speak("Access Denied");
       vibrate("invalid");
     }
-
     setTimeout(()=>scanningLocked=false,3000);
   }
-).then(()=>{
-  track=document.querySelector("video").srcObject.getVideoTracks()[0];
-});
+).then(()=>{track=document.querySelector("video").srcObject.getVideoTracks()[0];});
 
-/* FLASH */
+// FLASH
 function toggleFlash(){
   if(!track) return;
   torch=!torch;
   track.applyConstraints({advanced:[{torch}]});
 }
 </script>
-
 </body>
 </html>
